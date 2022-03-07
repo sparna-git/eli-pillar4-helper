@@ -1,0 +1,103 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>eu.europa.publications</groupId>
+    <artifactId>eu.europa.publications-root-pom</artifactId>
+    <version>1</version>
+    <packaging>pom</packaging>
+
+    <name>eu.europa.publications</name>
+    <description>Root pom of eu.europa.publications</description>
+    <url>http://publications.europa.eu</url>
+
+    <organization>
+        <name>Office of Publications of the European Union</name>
+        <url>http://op.europa.eu</url>
+    </organization> 
+
+    <properties>
+        <!-- library versions -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <pushChanges>false</pushChanges>
+                    <localCheckout>true</localCheckout> 
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- for command-line parsing -->
+            <dependency>
+                <groupId>com.beust</groupId>
+                <artifactId>jcommander</artifactId>
+                <version>1.82</version>
+            </dependency>
+
+            <!-- logging -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.36</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.2.11</version>
+            </dependency>
+
+            <!-- commons csv -->
+            <dependency>
+              <groupId>org.apache.commons</groupId>
+              <artifactId>commons-csv</artifactId>
+              <version>1.9.0</version>
+            </dependency>
+
+            <!-- Crawler commons -->
+            <!-- See https://github.com/crawler-commons/crawler-commons/blob/master/src/main/java/crawlercommons/sitemaps/SiteMapParser.java -->
+            <dependency>
+                <groupId>com.github.crawler-commons</groupId>
+                <artifactId>crawler-commons</artifactId>
+                <version>1.2</version>
+            </dependency>
+
+            <!-- ROME for Atom Feed manipulation -->
+            <!-- https://github.com/rometools/rome -->
+            <dependency>
+              <groupId>com.rometools</groupId>
+              <artifactId>rome</artifactId>
+              <version>1.18.0</version>
+            </dependency>
+            
+            <!-- Testing: JUnit -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.13.3</version>
+                <scope>test</scope>
+            </dependency>
+
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>

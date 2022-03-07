@@ -1,0 +1,70 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<groupId>eu.europa.publications.eli.pillar4-helper</groupId>
+	<artifactId>pillar4-helper-delivery</artifactId>
+	<packaging>pom</packaging>
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>eu.europa.publications.eli</groupId>
+		<artifactId>pillar4-helper</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+
+
+	<name>ELI Pillar IV helper delivery package</name>
+	<description>ELI Pillar IV helper delivery package</description>
+
+	<build>
+		<plugins>
+
+		  <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>assemble</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+		                    <descriptors>
+		                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+		                    </descriptors>
+		                    <attach>true</attach>
+		                </configuration>
+                    </execution>
+                </executions>
+          </plugin>
+
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>eu.europa.publications.eli.pillar4-helper</groupId>
+			<artifactId>pillar4-helper-lib</artifactId>
+			<version>${project.version}</version>
+			<type>jar</type>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.publications.eli.pillar4-helper</groupId>
+			<artifactId>pillar4-helper-app</artifactId>
+			<version>${project.version}</version>
+			<type>jar</type>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.publications.eli.pillar4-helper</groupId>
+			<artifactId>pillar4-helper-app</artifactId>
+			<version>${project.version}</version>
+			<type>jar</type>
+			<classifier>onejar</classifier>
+		</dependency>
+	</dependencies>
+
+</project>
