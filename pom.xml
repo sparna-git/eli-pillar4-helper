@@ -66,6 +66,7 @@
             </dependency>
 
             <!-- commons csv -->
+            <!-- https://commons.apache.org/proper/commons-csv/ -->
             <dependency>
               <groupId>org.apache.commons</groupId>
               <artifactId>commons-csv</artifactId>
@@ -86,6 +87,14 @@
               <groupId>com.rometools</groupId>
               <artifactId>rome</artifactId>
               <version>1.18.0</version>
+            </dependency>
+
+            <!-- Sitemap generation -->
+            <!-- https://github.com/dfabulich/sitemapgen4j -->
+            <dependency>
+              <groupId>com.github.dfabulich</groupId>
+              <artifactId>sitemapgen4j</artifactId>
+              <version>1.1.2</version>
             </dependency>
             
             <!-- Testing: JUnit -->

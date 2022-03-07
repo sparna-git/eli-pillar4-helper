@@ -45,6 +45,22 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
+        <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-csv</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>com.github.dfabulich</groupId>
+          <artifactId>sitemapgen4j</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>com.rometools</groupId>
+          <artifactId>rome</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>com.github.crawler-commons</groupId>
+          <artifactId>crawler-commons</artifactId>
+        </dependency>
 
 	</dependencies>
 
