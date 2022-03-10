@@ -1,0 +1,5 @@
+prefix cdm: <http://publications.europa.eu/ontology/cdm#> 
+select (STR(?eli) AS ?ELI) ?date where {
+  ?x cdm:resource_legal_eli ?eli .
+  ?x <http://publications.europa.eu/ontology/cdm/cmr#lastModificationDate> ?date
+} 
