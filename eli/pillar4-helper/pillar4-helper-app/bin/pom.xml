@@ -105,20 +105,12 @@
           <artifactId>rome</artifactId>
         </dependency>
 
-		<!-- CSV parser -->
-		<dependency>
-			<groupId>com.opencsv</groupId>
-		   	<artifactId>opencsv</artifactId>
-		   	<version>5.3</version>  	
-		</dependency>
-		
-		
 		<dependency>
 			<groupId>eu.europa.publications.eli.pillar4-helper</groupId>
 			<artifactId>pillar4-helper-lib</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 	</dependencies>
 
 </project>

@@ -23,6 +23,20 @@ public class ArgumentsCsv2Pillar4 {
 			required = true
 	)
 	private File output;
+	
+	@Parameter(
+			names = { "-u", "--baseurl" },
+			description = "Base URL",
+			required = true
+	)
+	private String baseurl;
+	
+	@Parameter(
+			names = { "-uset", "--baseurlset" },
+			description = "Base URL",
+			required = false
+	)
+	private String baseurlset;
 
 	public File getInput() {
 		return input;
@@ -39,10 +53,27 @@ public class ArgumentsCsv2Pillar4 {
 	public void setOutput(File output) {
 		this.output = output;
 	}
-
+	
+	public String getbaseurl() {
+		return baseurl;
+	}
+	
+	public void setbaseurl(String baseurl) {
+		this.baseurl = baseurl;
+	}
+	
+	public String getbaseurlset() {
+		return baseurlset;
+	}
+	
+	public void setbaseurlset(String baseurlset) {
+		this.baseurlset = baseurlset;
+	}
+	
+	
 	@Override
 	public String toString() {
-		return "ArgumentsCsv2SitemapAndAtom [input=" + input + ", output=" + output + "]";
+		return "ArgumentsCsv2SitemapAndAtom [input=" + input + ", output=" + output + ",baseurl="+ baseurl +",baseurlset=" + baseurlset + "]";
 	}
 	
 	
