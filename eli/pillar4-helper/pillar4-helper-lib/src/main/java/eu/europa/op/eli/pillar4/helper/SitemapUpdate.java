@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +28,7 @@ import com.opencsv.bean.CsvToBeanBuilder;
 
 public class SitemapUpdate {
 	
-	public void ModifiedXMLSitemap(String inputXML,String baseUrlset) throws FileNotFoundException, TransformerException {
+	public void ModifiedXMLSitemap(String inputXML,URL baseUrlset) throws FileNotFoundException, TransformerException {
 		
 		File fileXMLGenerated = new File(inputXML);
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -46,7 +47,7 @@ public class SitemapUpdate {
 			 * rootURL.setAttribute(prefix,url);
 			 */
 			rootURL.setAttribute("xmlns:dct","http://purl.org/dc/terms/");
-			rootURL.setAttribute("dct:relation",baseUrlset);
+			rootURL.setAttribute("dct:relation",baseUrlset.toString());
 			
 			// write the content into xml file
 	        TransformerFactory transformerFactory = TransformerFactory.newInstance();

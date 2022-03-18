@@ -1,6 +1,7 @@
 package eu.europa.op.eli.pillar4.helper.csv2pillar4;
 
 import java.io.File;
+import java.net.URL;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -29,14 +30,14 @@ public class ArgumentsCsv2Pillar4 {
 			description = "Base URL",
 			required = true
 	)
-	private String baseurl;
+	private URL baseurl;
 	
 	@Parameter(
 			names = { "-uset", "--baseurlset" },
 			description = "Base URL",
 			required = false
 	)
-	private String baseurlset;
+	private URL baseurlset;
 
 	public File getInput() {
 		return input;
@@ -54,19 +55,19 @@ public class ArgumentsCsv2Pillar4 {
 		this.output = output;
 	}
 	
-	public String getbaseurl() {
+	public URL getbaseurl() {
 		return baseurl;
 	}
 	
-	public void setbaseurl(String baseurl) {
+	public void setbaseurl(URL baseurl) {
 		this.baseurl = baseurl;
 	}
 	
-	public String getbaseurlset() {
+	public URL getbaseurlset() {
 		return baseurlset;
 	}
 	
-	public void setbaseurlset(String baseurlset) {
+	public void setbaseurlset(URL baseurlset) {
 		this.baseurlset = baseurlset;
 	}
 	

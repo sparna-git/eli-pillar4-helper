@@ -6,12 +6,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -22,8 +24,6 @@ import com.redfin.sitemapgenerator.WebSitemapGenerator;
 import com.redfin.sitemapgenerator.WebSitemapUrl;
 import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.atom.Feed;
-import com.rometools.rome.feed.synd.SyndFeed;
-import com.rometools.rome.feed.synd.SyndFeedImpl;
 import com.rometools.rome.io.WireFeedOutput;
 
 import crawlercommons.sitemaps.AbstractSiteMap;
@@ -35,7 +35,7 @@ public class Pillar4Helper {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 	
-	public void csv2Pillar4(File input, File output, String baseUrl, String baseurlset)
+	public void csv2Pillar4(File input, File output, URL baseUrl, URL baseurlset)
 			throws Pillar4Exception {
 
 		log.debug("Executing csv2Pillar4...");
@@ -55,6 +55,13 @@ public class Pillar4Helper {
 
 			// Format Date
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			
+			// Create folder is not exist
+			Path path = Paths.get(output.toString());
+			if(!Files.exists(path)) {
+				Files.createDirectory(path);
+			}
+			
 			// Generator Sitemap
 			WebSitemapGenerator wsg = new WebSitemapGenerator(baseUrl, output);
 			for (int i=0;i<stmapdata.size();i++) {
@@ -72,7 +79,6 @@ public class Pillar4Helper {
 						.build();
 
 				wsg.addUrl(url);
-				
 			}
 
 
@@ -89,14 +95,15 @@ public class Pillar4Helper {
 			}
 
 			// Update URLSet in sitemap generated
-			if (baseurlset != null && !baseurlset.isEmpty()) {
+			if (baseurlset!=null) {
 				log.debug("Updating base URL in sitemap in '"+mainoutputSitemapPath+"' ...");
 				SitemapUpdate stmSetup = new SitemapUpdate();
 				stmSetup.ModifiedXMLSitemap(mainoutputSitemapPath, baseurlset);
 			}
 
 			// Call class for the create Atom File
-
+			log.debug("Writing output Atom Feed ...");
+			sitemap2Atom(output, output, baseUrl);
 
 		} catch (Exception e) {
 			throw new Pillar4Exception(e);
@@ -108,49 +115,45 @@ public class Pillar4Helper {
 
 	public void sitemap2Atom(File input, File output, URL baseUrl)
 			throws Pillar4Exception {
+		
 		log.debug("Executing sitemap2Atom...");
 		long start = System.currentTimeMillis();
 
-		List<SiteMap> lsiteMaps = new ArrayList<SiteMap>();
-
-		File[] SITEMAP_XML = output.listFiles();
+		log.debug("Read all files sitemaps ... "+input.toString());
+		File[] SITEMAP_XML = input.listFiles();
 
 		AbstractSiteMap asm;
-		// read all xml file
-
-		List<SiteMap> siteMaps = new ArrayList<>();
-		SiteMapParser sitemapParser = new SiteMapParser();
-
 		SiteMapParser parser = new SiteMapParser();
 		String contentType = "application/octet-stream";
-		//byte[] content = "this is a bogus sitemap".getBytes(StandardCharsets.UTF_8);
+		//String contentType = "application/xml";
+		
+		// Creation source for the Atom Feed
+		Feed feed = new Feed();
 		
 		try {
 		
 		// Read all sitemap xml files
 		for(File sFile : SITEMAP_XML) {
-			if(sFile.isFile()) {
+			if(sFile.isFile() && !sFile.getName().equals("sitemap_index.xml")) {
+				
 				byte[] content = getResourceAsBytes(sFile.toString());
 				
-				// Config
-				parser.parseSiteMap(contentType, content, baseUrl);
-				AbstractSiteMap asmTest = parser.parseSiteMap(contentType, content, baseUrl);				
-				SiteMap sm = (SiteMap) asmTest;
-				
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);				
+				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");				
 				Calendar c = Calendar.getInstance();
 				c.add(c.DATE, -61);
 				Date dateQuery = c.getTime();
 				String dateFilter = formatter.format(dateQuery);
 				
+				AbstractSiteMap asmTest = parser.parseSiteMap(contentType,content, baseUrl);
+				System.out.println("Sitemap source"+asmTest);
+			
+				SiteMap sm = (SiteMap) asmTest;
+				
 				if(!sm.isIndex()) {
-					siteMaps.add(sm); 
-					
+					log.debug("Writing header RSS ...");					
 					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-					SimpleDateFormat sdfShort = new SimpleDateFormat("yyyy-MM-dd");
-					// Creation source for the Atom Feed
-					Feed feed = new Feed();
-					SyndFeed feedAtt = new SyndFeedImpl();
+					
+					
 			        try {
 			           feed.setFeedType("atom_1.0");
 			           feed.setTitle("Fictitious ELI update feed");
@@ -161,23 +164,15 @@ public class Pillar4Helper {
 			           Date udate = (Date) sdf.parseObject(dateNow);			 
 			           feed.setUpdated(udate);
 			           //feed.setAuthors(); 
-			           
-			           
-			           feedAtt.setAuthor("Country Legislation Service");
-			           feedAtt.setLink("http://data.europa.eu/eli/eli-update-feed.atom");
-			           
-			           
 			            
 			        } catch (Exception ee) {
 			            System.out.println(ee);
 			        }
 					
-					
-					
+			        log.debug("Writing Entry Atom...");
 					for (SiteMapURL su : sm.getSiteMapUrls()) {
-						//su.getAttributes();
 						URL urlSitemap = su.getUrl();
-						String lastUpdate = formatter.format(su.getLastModified());
+						
 						// Filter for the write data sitemap in Atom 
 						if (su.getLastModified().after(dateQuery)) {
 							// Create an Entry
@@ -200,55 +195,30 @@ public class Pillar4Helper {
 					            entries = new ArrayList();
 					        }
 					        entries.add(entry);
-					        feed.setEntries(entries);
-					        
+					        feed.setEntries(entries);					        
 						}
 					} // for
-					//Publish your ATOM Feed
-			        try {
-			            File RSSDoc = new File("C:\\Temp\\atomfeed.atom");
-			            if (!RSSDoc.exists()) {
-			                RSSDoc.createNewFile();
-			            }
-			            WireFeedOutput wfo = new WireFeedOutput();
-			            wfo.output(feed, RSSDoc);	
-			            //wfo.output(feedAtt, RSSDoc);	
-			        } catch (Exception ee) {
-			            System.out.println(ee);
-			        }
-				}
-				
-				
-				
-			}
+				}	
+			}		
 		}
+		
+		//Publish your ATOM Feed
+		log.debug("Writing AtomFeed File .... ");
+		try {
+            File RSSDoc = new File(output+"/"+"atomfeed.atom");
+            if (!RSSDoc.exists()) {
+                RSSDoc.createNewFile();
+            }
+            WireFeedOutput wfo = new WireFeedOutput();
+            wfo.output(feed, RSSDoc);	
+        } catch (Exception ee) {
+            System.out.println(ee);
+        }
 		
 		} catch(Exception e) {
 			throw new Pillar4Exception(e);
 		}
 		
-		
-		/*
-		 * for(File file : SITEMAP_XML) { if(file.isFile()) { String contentType =
-		 * "text/xml"; byte[] content = getResourceAsBytes(file.toString()); URL url =
-		 * new URL("http://data.europa.eu/eli/sitemap1.xml");
-		 * 
-		 * asm = sitemapParser.parseSiteMap(content, url); List<SiteMapURL> siteMapUrls
-		 * = new LinkedList<>(); if(asm.getType() == SitemapType.INDEX) { for
-		 * (AbstractSiteMap siteMapFromIndex : ((SiteMapIndex) asm).getSitemaps()) {
-		 * siteMapUrls.addAll(parse(siteMapFromIndex.getUrl().toURI(), )); } } } }
-		 */
-		// Get Date Calculate
-		
-		/*
-		 * List<SiteMap> stmSource = siteMaps .stream() .filter(src ->
-		 * src.getLastModified().after(date)) .collect(Collectors.toList());
-		 * 
-		 * System.out.println("Total: "+stmSource.size());
-		 * 
-		 * stmSource.forEach(s ->
-		 * {System.out.println(s.getUrl()+" ***** "+s.getLastModified());});
-		 */
 		long end = System.currentTimeMillis();
 		log.debug("sitemap2Atom executed in " + (end - start) + " ms");
 	}
