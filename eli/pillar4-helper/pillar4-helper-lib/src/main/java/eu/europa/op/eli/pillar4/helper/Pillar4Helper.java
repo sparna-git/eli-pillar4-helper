@@ -2,135 +2,104 @@ package eu.europa.op.eli.pillar4.helper;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.chrono.ChronoZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.CalendarUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.opencsv.bean.CsvToBeanBuilder;
-import com.opencsv.exceptions.CsvException;
-
-import com.redfin.sitemapgenerator.SitemapIndexGenerator;
 import com.redfin.sitemapgenerator.WebSitemapGenerator;
 import com.redfin.sitemapgenerator.WebSitemapUrl;
-import com.rometools.rome.feed.WireFeed;
 import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.atom.Feed;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.feed.synd.SyndFeedImpl;
 import com.rometools.rome.io.WireFeedOutput;
 
-import crawlercommons.CrawlerCommons;
 import crawlercommons.sitemaps.AbstractSiteMap;
-import crawlercommons.sitemaps.AbstractSiteMap.SitemapType;
 import crawlercommons.sitemaps.SiteMap;
-import crawlercommons.sitemaps.SiteMapIndex;
 import crawlercommons.sitemaps.SiteMapParser;
-import crawlercommons.sitemaps.SiteMapTester;
 import crawlercommons.sitemaps.SiteMapURL;
-import crawlercommons.sitemaps.UnknownFormatException;
 
 public class Pillar4Helper {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 	
 	public void csv2Pillar4(File input, File output, String baseUrl, String baseurlset)
-			throws Pillar4Exception, ParseException, CsvException, ParserConfigurationException, TransformerException {
+			throws Pillar4Exception {
 
 		log.debug("Executing csv2Pillar4...");
 		long start = System.currentTimeMillis();
 
 		try {
-			// Read csv file
-			List<SitemapCsv> stmapdata = new CsvToBeanBuilder(new FileReader(input)).withType(SitemapCsv.class)
-					.withSkipLines(1).build().parse();
+			// Read CSV file
+			log.debug("Reading input CSV file...");
+			List<SitemapCsv> stmapdata = new CsvToBeanBuilder<SitemapCsv>(new FileReader(input))
+					.withType(SitemapCsv.class)
+					.withSkipLines(1)
+					.build()
+					.parse();
+			
+			// sort the list
+			stmapdata.sort((row1,row2)->row2.getLastDate().compareTo(row1.getLastDate()));
 
-			try {
-				// Format Date
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-				// Generator Sitemap
-				WebSitemapGenerator wsg = new WebSitemapGenerator(baseUrl, new File(output, ""));
-				for (SitemapCsv out : stmapdata) {
-
-					// Date Format
-					Date dateSitemap = formatter.parse(out.getLastDate());
-
-					// Creation for the sitemap structure
-					WebSitemapUrl url = new WebSitemapUrl.Options(out.getLoc()) // Loc
-							.lastMod(dateSitemap) // Last Date
-							.build();
-
-					wsg.addUrl(url);
+			// Format Date
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			// Generator Sitemap
+			WebSitemapGenerator wsg = new WebSitemapGenerator(baseUrl, output);
+			for (int i=0;i<stmapdata.size();i++) {
+				SitemapCsv out = stmapdata.get(i);
+				if((i % 1000) == 0) {
+					log.debug("Processing CSV line "+i+"...");
 				}
-
-				// Write the sitemap File
-				wsg.write();
-
-				//
-				String FileXMLCreated = null;
-				if (stmapdata.size() > 50000) {
-					wsg.writeSitemapsWithIndex();
-					FileXMLCreated = output.getAbsolutePath() + "\\" + "sitemap_index.xml";
-				} else {
-					FileXMLCreated = output.getAbsolutePath() + "\\" + "sitemap.xml";
-				}
-
-				// Update URLSet in sitemap generated
-				if (!baseurlset.isEmpty()) {
-					SitemapUpdate stmSetup = new SitemapUpdate();
-					stmSetup.ModifiedXMLSitemap(FileXMLCreated, baseurlset);
-				}
-
-				// Call class for the create Atom File
 				
+				// Date Format
+				Date dateSitemap = formatter.parse(out.getLastDate());
 
-			} catch (IOException e) {
-				System.out.println(e);
+				// Creation for the sitemap structure
+				WebSitemapUrl url = new WebSitemapUrl.Options(out.getLoc()) // Loc
+						.lastMod(dateSitemap) // Last Date
+						.build();
+
+				wsg.addUrl(url);
+				
 			}
 
-		} catch (IllegalStateException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+
+			log.debug("Writing output sitemap...");
+			// Write the sitemap File
+			String mainoutputSitemapPath = null;
+			if (stmapdata.size() > 50000) {
+				wsg.write();
+				wsg.writeSitemapsWithIndex();
+				mainoutputSitemapPath = output.getAbsolutePath() + "/" + "sitemap_index.xml";
+			} else {
+				wsg.write();
+				mainoutputSitemapPath = output.getAbsolutePath() + "/" + "sitemap.xml";
+			}
+
+			// Update URLSet in sitemap generated
+			if (baseurlset != null && !baseurlset.isEmpty()) {
+				log.debug("Updating base URL in sitemap in '"+mainoutputSitemapPath+"' ...");
+				SitemapUpdate stmSetup = new SitemapUpdate();
+				stmSetup.ModifiedXMLSitemap(mainoutputSitemapPath, baseurlset);
+			}
+
+			// Call class for the create Atom File
+
+
+		} catch (Exception e) {
+			throw new Pillar4Exception(e);
 		}
 
 		long end = System.currentTimeMillis();
@@ -138,7 +107,7 @@ public class Pillar4Helper {
 	}
 
 	public void sitemap2Atom(File input, File output, URL baseUrl)
-			throws Pillar4Exception, IOException, ParseException, UnknownFormatException {
+			throws Pillar4Exception {
 		log.debug("Executing sitemap2Atom...");
 		long start = System.currentTimeMillis();
 
@@ -156,7 +125,7 @@ public class Pillar4Helper {
 		String contentType = "application/octet-stream";
 		//byte[] content = "this is a bogus sitemap".getBytes(StandardCharsets.UTF_8);
 		
-		
+		try {
 		
 		// Read all sitemap xml files
 		for(File sFile : SITEMAP_XML) {
@@ -252,6 +221,10 @@ public class Pillar4Helper {
 				
 				
 			}
+		}
+		
+		} catch(Exception e) {
+			throw new Pillar4Exception(e);
 		}
 		
 		
