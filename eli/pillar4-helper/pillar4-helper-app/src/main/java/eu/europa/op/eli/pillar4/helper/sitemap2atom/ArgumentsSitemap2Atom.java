@@ -1,6 +1,7 @@
 package eu.europa.op.eli.pillar4.helper.sitemap2atom;
 
 import java.io.File;
+import java.net.URL;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -23,6 +24,13 @@ public class ArgumentsSitemap2Atom {
 			required = true
 	)
 	private File output;
+	
+	@Parameter(
+			names = { "-u", "--baseurl" },
+			description = "Base URL",
+			required = true
+	)
+	private URL baseurl;
 
 	public File getInput() {
 		return input;
@@ -39,10 +47,18 @@ public class ArgumentsSitemap2Atom {
 	public void setOutput(File output) {
 		this.output = output;
 	}
+	
+	public URL getbaseurl() {
+		return baseurl;
+	}
 
+	public void setbaseurl(URL baseurl) {
+		this.baseurl = baseurl;
+	}
+	
 	@Override
 	public String toString() {
-		return "ArgumentsSitemap2Atom [input=" + input + ", output=" + output + "]";
+		return "ArgumentsSitemap2Atom [input=" + input + ", output=" + output + ",baseurl=" + baseurl + "]";
 	}
 	
 	
