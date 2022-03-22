@@ -18,7 +18,7 @@ public class Sitemap2Atom implements CliCommandIfc {
 		log.debug(a.toString());
 		
 		Pillar4Helper pillar4Helper = new Pillar4Helper();
-		pillar4Helper.sitemap2Atom(a.getInput(), a.getOutput(), a.getbaseurl());
+		pillar4Helper.sitemap2Atom(a.getInput(), a.getOutput(), a.getbaseurl(), a.getInputAtom());
 	}
 
 	

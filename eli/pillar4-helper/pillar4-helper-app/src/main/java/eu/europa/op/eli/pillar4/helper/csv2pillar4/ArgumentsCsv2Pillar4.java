@@ -38,6 +38,13 @@ public class ArgumentsCsv2Pillar4 {
 			required = false
 	)
 	private URL baseurlset;
+	
+	@Parameter(
+			names = { "-iAtom", "--inputAtom" },
+			description = "Path to the input Atom Properties file",
+			required = true
+	)
+	private File inputAtom;
 
 	public File getInput() {
 		return input;
@@ -53,6 +60,14 @@ public class ArgumentsCsv2Pillar4 {
 
 	public void setOutput(File output) {
 		this.output = output;
+	}
+	
+	public File getInputAtom() {
+		return inputAtom;
+	}
+
+	public void setInputAtom(File inputAtom) {
+		this.inputAtom = inputAtom;
 	}
 	
 	public URL getbaseurl() {
@@ -74,7 +89,7 @@ public class ArgumentsCsv2Pillar4 {
 	
 	@Override
 	public String toString() {
-		return "ArgumentsCsv2SitemapAndAtom [input=" + input + ", output=" + output + ",baseurl="+ baseurl +",baseurlset=" + baseurlset + "]";
+		return "ArgumentsCsv2SitemapAndAtom [input=" + input + ", output=" + output + ",baseurl="+ baseurl +",baseurlset=" + baseurlset + ", inputAtom= " + inputAtom + "]";
 	}
 	
 	

@@ -19,7 +19,7 @@ public class ArgumentsSitemap2Atom {
 	private File input;
 	
 	@Parameter(
-			names = { "-o", "--ouptut" },
+			names = { "-o", "--output" },
 			description = "Path to the output Atom feed",
 			required = true
 	)
@@ -32,6 +32,14 @@ public class ArgumentsSitemap2Atom {
 	)
 	private URL baseurl;
 
+	@Parameter(
+			names = { "-iAtom", "--inputAtom" },
+			description = "Path to the input Atom Properties file",
+			required = true
+	)
+	private File inputAtom;
+	
+	
 	public File getInput() {
 		return input;
 	}
@@ -48,6 +56,16 @@ public class ArgumentsSitemap2Atom {
 		this.output = output;
 	}
 	
+	
+	public File getInputAtom() {
+		return inputAtom;
+	}
+
+	public void setInputAtom(File inputAtom) {
+		this.inputAtom = inputAtom;
+	}
+	
+	
 	public URL getbaseurl() {
 		return baseurl;
 	}
@@ -58,7 +76,7 @@ public class ArgumentsSitemap2Atom {
 	
 	@Override
 	public String toString() {
-		return "ArgumentsSitemap2Atom [input=" + input + ", output=" + output + ",baseurl=" + baseurl + "]";
+		return "ArgumentsSitemap2Atom [input=" + input + ", output=" + output + ",baseurl=" + baseurl + ", inputAtom= " + inputAtom + "]";
 	}
 	
 	

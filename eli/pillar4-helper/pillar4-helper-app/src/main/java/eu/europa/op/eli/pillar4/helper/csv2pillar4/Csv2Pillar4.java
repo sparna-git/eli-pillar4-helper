@@ -18,7 +18,7 @@ public class Csv2Pillar4 implements CliCommandIfc {
 		log.debug(a.toString());
 		
 		Pillar4Helper pillar4Helper = new Pillar4Helper();
-		pillar4Helper.csv2Pillar4(a.getInput(), a.getOutput(), a.getbaseurl(), a.getbaseurlset());
+		pillar4Helper.csv2Pillar4(a.getInput(), a.getOutput(), a.getbaseurl(), a.getbaseurlset(), a.getInputAtom());
 	}
 
 	
