@@ -18,7 +18,14 @@ public class Sitemap2Atom implements CliCommandIfc {
 		log.debug(a.toString());
 		
 		Pillar4Helper pillar4Helper = new Pillar4Helper();
-		pillar4Helper.sitemap2Atom(a.getInput(), a.getOutput(), a.getbaseurl(), a.getInputAtom());
+		pillar4Helper.setNumberOfDaysInRange(a.getAtomDays());
+		
+		pillar4Helper.sitemap2Atom(
+				a.getSitemapInput(),
+				a.getAtomOutput(),
+				a.getSitemapBaseUrl(),
+				a.getAtomHeader()
+		);
 	}
 
 	

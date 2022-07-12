@@ -4,6 +4,8 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.MissingCommandException;
 import com.beust.jcommander.ParameterException;
 
+import eu.europa.op.eli.pillar4.helper.atomheader.ArgumentsAtomHeader;
+import eu.europa.op.eli.pillar4.helper.atomheader.AtomHeader;
 import eu.europa.op.eli.pillar4.helper.csv2pillar4.ArgumentsCsv2Pillar4;
 import eu.europa.op.eli.pillar4.helper.csv2pillar4.Csv2Pillar4;
 import eu.europa.op.eli.pillar4.helper.sitemap2atom.ArgumentsSitemap2Atom;
@@ -15,7 +17,8 @@ public class Main {
 	enum COMMAND {		
 
 		SITEMAP2ATOM(new ArgumentsSitemap2Atom(), new Sitemap2Atom()),
-		CSV2PILLAR4(new ArgumentsCsv2Pillar4(), new Csv2Pillar4())
+		CSV2PILLAR4(new ArgumentsCsv2Pillar4(), new Csv2Pillar4()),
+		ATOMHEADER(new ArgumentsAtomHeader(), new AtomHeader())
 		;
 
 		private CliCommandIfc command;

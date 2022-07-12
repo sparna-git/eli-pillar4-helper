@@ -12,72 +12,88 @@ import com.beust.jcommander.Parameters;
 public class ArgumentsSitemap2Atom {
 
 	@Parameter(
-			names = { "-i", "--input" },
+			names = { "-i", "--sitemapInput" },
 			description = "Path to the input Sitemap file",
 			required = true
 	)
-	private File input;
+	private File sitemapInput;
 	
 	@Parameter(
-			names = { "-o", "--output" },
+			names = { "-su", "--sitemapBaseUrl" },
+			description = "Base URL of every ELI listed in the sitemap file. All ELIs in the sitemap MUST begin by this base URL.",
+			required = true
+	)
+	private URL sitemapBaseUrl;
+	
+	@Parameter(
+			names = { "-ao", "--atomOutput" },
 			description = "Path to the output Atom feed",
 			required = true
 	)
-	private File output;
+	private File atomOutput;
 	
 	@Parameter(
-			names = { "-u", "--baseurl" },
-			description = "Base URL",
+			names = { "-ah", "--atomHeader" },
+			description = "Path to the input Atom 'skeleton' file containing the Atom header information",
 			required = true
 	)
-	private URL baseurl;
-
+	private File atomHeader;
+	
 	@Parameter(
-			names = { "-iAtom", "--inputAtom" },
-			description = "Path to the input Atom Properties file",
-			required = true
+			names = { "-ad", "--atomDays" },
+			description = "The number of days that the Atom feed should contain. Defaults to 60.",
+			required = false
 	)
-	private File inputAtom;
+	private int atomDays = 60;
 	
 	
-	public File getInput() {
-		return input;
+	public File getSitemapInput() {
+		return sitemapInput;
 	}
 
-	public void setInput(File input) {
-		this.input = input;
+	public void setSitemapInput(File sitemapInput) {
+		this.sitemapInput = sitemapInput;
+	}
+	
+	public URL getSitemapBaseUrl() {
+		return sitemapBaseUrl;
 	}
 
-	public File getOutput() {
-		return output;
+	public void setSitemapBaseUrl(URL sitemapBaseUrl) {
+		this.sitemapBaseUrl = sitemapBaseUrl;
 	}
 
-	public void setOutput(File output) {
-		this.output = output;
+	public File getAtomOutput() {
+		return atomOutput;
 	}
 	
-	
-	public File getInputAtom() {
-		return inputAtom;
-	}
-
-	public void setInputAtom(File inputAtom) {
-		this.inputAtom = inputAtom;
-	}
-	
-	
-	public URL getbaseurl() {
-		return baseurl;
+	public void setAtomOutput(File atomOutput) {
+		this.atomOutput = atomOutput;
 	}
 
-	public void setbaseurl(URL baseurl) {
-		this.baseurl = baseurl;
+	public File getAtomHeader() {
+		return atomHeader;
 	}
-	
+
+	public void setAtomHeader(File atomHeader) {
+		this.atomHeader = atomHeader;
+	}
+
+	public int getAtomDays() {
+		return atomDays;
+	}
+
+	public void setAtomDays(int atomDays) {
+		this.atomDays = atomDays;
+	}
+
 	@Override
 	public String toString() {
-		return "ArgumentsSitemap2Atom [input=" + input + ", output=" + output + ",baseurl=" + baseurl + ", inputAtom= " + inputAtom + "]";
+		return "ArgumentsSitemap2Atom [sitemapInput=" + sitemapInput + ", sitemapBaseUrl=" + sitemapBaseUrl
+				+ ", atomOutput=" + atomOutput + ", atomHeader=" + atomHeader + ", atomDays=" + atomDays + "]";
 	}
+
 	
+
 	
 }

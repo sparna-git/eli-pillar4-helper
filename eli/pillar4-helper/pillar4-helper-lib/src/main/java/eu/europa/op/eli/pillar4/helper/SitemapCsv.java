@@ -5,38 +5,39 @@ import com.opencsv.bean.CsvBindByPosition;
 public class SitemapCsv {
 	
 	@CsvBindByPosition(position = 0)
-	protected String Loc;
+	protected String url;
 
 	@CsvBindByPosition(position = 1)
-	protected String LastDate;
+	protected String updateDate;
 	
-	protected String BaseURL;
-
-	public String getBaseURL() {
-		return BaseURL;
-	}
-
-	public void setBaseURL(String baseURL) {
-		BaseURL = baseURL;
-	}
-
-	public String getLoc() {
-		return Loc;
-	}
-
-	public void setLoc(String loc) {
-		Loc = loc;
-	}
-
-	public String getLastDate() {
-		return LastDate;
-	}
-
-	public void setLastDate(String lastDate) {
-		LastDate = lastDate;
-	}
+	@CsvBindByPosition(position = 2)
+	protected String title;
 	
-	
+
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public String getUpdateDate() {
+		return updateDate;
+	}
+
+	public void setUpdateDate(String updateDate) {
+		this.updateDate = updateDate;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
 	
 
 }

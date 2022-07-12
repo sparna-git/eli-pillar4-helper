@@ -3,38 +3,29 @@ package eu.europa.op.eli.pillar4.helper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.IOException;
+import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
+import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.redfin.sitemapgenerator.WebSitemapGenerator;
 import com.redfin.sitemapgenerator.WebSitemapUrl;
 import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.atom.Feed;
-import com.rometools.rome.feed.atom.Link;
-import com.rometools.rome.feed.atom.Person;
-import com.rometools.rome.feed.synd.SyndPerson;
+import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.WireFeedOutput;
 
 import crawlercommons.sitemaps.AbstractSiteMap;
@@ -45,10 +36,24 @@ import crawlercommons.sitemaps.SiteMapURL;
 public class Pillar4Helper {
 
 	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
-	private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+	
 
-	public void csv2Pillar4(File input, File output, URL baseUrl, URL baseurlset, File inputAtom)
-			throws Pillar4Exception {
+	private SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
+	private SimpleDateFormat DATE_TIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+ 
+
+	// the number of days before today to build the date range
+	// in which entries of the sitemap will be inserted in the Atom
+	private int numberOfDaysInRange = 60;
+
+	public void csv2Pillar4(
+			File input,
+			File outputSitemapDir,
+			File outputAtomFile,
+			URL baseUrl,
+			URL baseurlset,
+			File atomHeader
+	) throws Pillar4Exception {
 
 		log.debug("Executing csv2Pillar4...");
 		long start = System.currentTimeMillis();
@@ -56,38 +61,69 @@ public class Pillar4Helper {
 		try {
 			// Read CSV file
 			log.debug("Reading input CSV file...");
-			List<SitemapCsv> stmapdata = new CsvToBeanBuilder<SitemapCsv>(new FileReader(input))
-					.withType(SitemapCsv.class).withSkipLines(1).build().parse();
+			CsvToBean<SitemapCsv> parser = new CsvToBeanBuilder<SitemapCsv>(new FileReader(input))
+					.withType(SitemapCsv.class)
+					.withSkipLines(1)
+					.build();
+			List<SitemapCsv> stmapdata = parser.parse();
 
 			// sort the list
-			stmapdata.sort((row1, row2) -> row2.getLastDate().compareTo(row1.getLastDate()));
+			stmapdata.sort((row1, row2) -> row2.getUpdateDate().compareTo(row1.getUpdateDate()));
 
 			// Format Date
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
 			// Create folder is not exist
-			Path path = Paths.get(output.toString());
+			Path path = Paths.get(outputSitemapDir.toString());
 			if (!Files.exists(path)) {
 				Files.createDirectory(path);
 			}
 
+			
+			List<Entry> atomEntries = new ArrayList<Entry>();
+			Date dateThreshold = this.getDateThreshold();
+			
 			// Generator Sitemap
-			WebSitemapGenerator wsg = new WebSitemapGenerator(baseUrl, output);
+			WebSitemapGenerator wsg = new WebSitemapGenerator(baseUrl, outputSitemapDir);
 			for (int i = 0; i < stmapdata.size(); i++) {
-				SitemapCsv out = stmapdata.get(i);
+				SitemapCsv csvLine = stmapdata.get(i);
 				if ((i % 1000) == 0) {
 					log.debug("Processing CSV line " + i + "...");
 				}
 
 				// Date Format
-				Date dateSitemap = formatter.parse(out.getLastDate());
+				Date updateDate;
+				try {
+					updateDate = DATE_TIME_FORMATTER.parse(csvLine.getUpdateDate());
+				} catch(Exception e) {
+					updateDate = DATE_FORMATTER.parse(csvLine.getUpdateDate());
+				}
+				
 
 				// Creation for the sitemap structure
-				WebSitemapUrl url = new WebSitemapUrl.Options(out.getLoc()) // Loc
-						.lastMod(dateSitemap) // Last Date
+				WebSitemapUrl url = new WebSitemapUrl
+						.Options(csvLine.getUrl()) // Loc
+						.lastMod(updateDate) // Last Date
 						.build();
 
 				wsg.addUrl(url);
+				
+				// then build Atom feed if date is in range
+				if (updateDate.after(dateThreshold)) {
+					// Create an Entry
+					Entry entry = new Entry();
+					
+					entry.setId(csvLine.getUrl());
+					entry.setUpdated(updateDate);
+					if(csvLine.getTitle() != null && !csvLine.getTitle().equals("")) {
+						entry.setTitle(csvLine.getTitle());
+					} else {
+						entry.setTitle(csvLine.getUrl());
+					}					
+
+					// Add Entry to Feed
+					log.debug("Adding entry to output feed "+entry.getTitle()+" (updated "+DATE_TIME_FORMATTER.format(updateDate)+")...");
+					atomEntries.add(entry);
+				}
 			}
 
 			log.debug("Writing output sitemap...");
@@ -96,10 +132,10 @@ public class Pillar4Helper {
 			if (stmapdata.size() > 50000) {
 				wsg.write();
 				wsg.writeSitemapsWithIndex();
-				mainoutputSitemapPath = output.getAbsolutePath() + "/" + "sitemap_index.xml";
+				mainoutputSitemapPath = outputSitemapDir.getAbsolutePath() + "/" + "sitemap_index.xml";
 			} else {
 				wsg.write();
-				mainoutputSitemapPath = output.getAbsolutePath() + "/" + "sitemap.xml";
+				mainoutputSitemapPath = outputSitemapDir.getAbsolutePath() + "/" + "sitemap.xml";
 			}
 
 			// Update URLSet in sitemap generated
@@ -109,9 +145,8 @@ public class Pillar4Helper {
 				stmSetup.ModifiedXMLSitemap(mainoutputSitemapPath, baseurlset);
 			}
 
-			// Call class for the create Atom File
-			// log.debug("Writing output Atom Feed ...");
-			sitemap2Atom(output, output, baseUrl, inputAtom);
+			// Then write Atom feed			
+			entries2Atom(atomEntries, outputAtomFile, atomHeader);
 
 		} catch (Exception e) {
 			throw new Pillar4Exception(e);
@@ -120,92 +155,114 @@ public class Pillar4Helper {
 		long end = System.currentTimeMillis();
 		log.debug("csv2Pillar4 executed in " + (end - start) + " ms");
 	}
-
-	public void sitemap2Atom(File input, File output, URL baseUrl, File inputAtom) throws Pillar4Exception {
-
-		log.debug("Executing sitemap2Atom...");
+	
+	public void entries2Atom(
+			List<Entry> entries,
+			File output,
+			File atomHeader
+	) throws Pillar4Exception {
+		log.debug("Writing final Atom feed...");
 		long start = System.currentTimeMillis();
-
-		log.debug("Read all files sitemaps ... " + input.toString());
-		File[] SITEMAP_XML = input.listFiles();
-		
-		Feed feed = null;
-		AbstractSiteMap asm;
-		SiteMapParser parser = new SiteMapParser();
-		//String contentType = "application/octet-stream";
-		String contentType = "text/xml";
-
 		try {
 			/*
 			 * if the atom properties exist Generate The feed root element
 			 */
-			String inputAtomFile = inputAtom.toString();
-			if (inputAtomFile != null) {
-				feed = setHeaderAtomFeed(inputAtomFile);
+			Feed feed = parseAtomHeader(atomHeader);
+			// init entries if null
+			if (feed.getEntries() == null) {
+				feed.setEntries(new ArrayList<Entry>());
+			}
+			
+			for (Entry entry : entries) {
+				// Add Entry to Feed
+				log.debug("Adding entry to output feed "+entry.getId()+" (updated "+DATE_TIME_FORMATTER.format(entry.getUpdated())+")...");
+				feed.getEntries().add(entry);
 			}
 
-			// Read all sitemap xml files
-			for (File sFile : SITEMAP_XML) {
-				if (sFile.isFile() && !sFile.getName().equals("sitemap_index.xml")) {
+			// Publish the ATOM Feed
+			log.debug("Writing AtomFeed File...");
+			if (!output.exists()) {
+				output.createNewFile();
+			}
+			WireFeedOutput wfo = new WireFeedOutput();
+			wfo.output(feed, output);
 
-					// load xml file a properties information
-					byte[] content = getResourceAsBytes(sFile.toString());
+		} catch (Exception e) {
+			throw new Pillar4Exception(e);
+		}
 
-					SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-					Calendar c = Calendar.getInstance();
-					c.add(c.DATE, -61);
-					Date dateQuery = c.getTime();
-					String dateFilter = formatter.format(dateQuery);
+		long end = System.currentTimeMillis();
+		log.debug("Done writing final Atom feed in " + (end - start) + " ms");
+	}
+	
+	
 
-					AbstractSiteMap asmTest = parser.parseSiteMap(contentType, content, baseUrl);
-					SiteMap sm = (SiteMap) asmTest;
+	public void sitemap2Atom(
+			File input,
+			File output,
+			URL baseUrl,
+			File atomHeader
+	) throws Pillar4Exception {
+
+		log.debug("Executing sitemap2Atom...");
+		long start = System.currentTimeMillis();
+
+		log.debug("Reading sitemap from " + input.toString() + "...");
+
+		try {			
+			Date dateThreshold = this.getDateThreshold();
+			SiteMapParser parser = new SiteMapParser();
+
+			// Read all XML files
+			
+			File[] xmlFiles = input.listFiles(new FilenameFilter() {
+			    public boolean accept(File dir, String name) {
+			        return name.toLowerCase().endsWith(".xml");
+			    }
+			});
+			if(xmlFiles == null) {
+				throw new Pillar4Exception("Cannot find any xml files in "+input.getAbsolutePath());
+			}
+			
+			List<Entry> atomEntries = new ArrayList<Entry>();
+			for (File sFile : xmlFiles) {
+				if (sFile.isFile()) {
+
+					InputStream is = new FileInputStream(sFile);
+					AbstractSiteMap sm = parser.parseSiteMap("text/xml", IOUtils.toByteArray(is), baseUrl);
+					is.close();
 
 					if (!sm.isIndex()) {
 
-						log.debug("Writing Entry Atom...");
-						for (SiteMapURL su : sm.getSiteMapUrls()) {
+						log.debug("Parsing sitemap file "+sFile.getAbsolutePath()+"...");
+						for (SiteMapURL su : ((SiteMap)sm).getSiteMapUrls()) {
 							URL urlSitemap = su.getUrl();
-
+							// log.debug("Testing entry for feed inclusion : "+urlSitemap.toString()+"/"+su.getLastModified()+"...");
+							
 							// Filter for the write data sitemap in Atom
-							if (su.getLastModified().after(dateQuery)) {
+							if (su.getLastModified().after(dateThreshold)) {
 								// Create an Entry
 								Entry entry = new Entry();
-								try {
-									entry.setTitle(urlSitemap.toString());
-									// entry.set
-									entry.setId(urlSitemap.toString());
 
-									// Date
-									entry.setUpdated(su.getLastModified());
-
-								} catch (Exception ex) {
-									System.out.println(ex);
-								}
+								entry.setTitle(urlSitemap.toString());
+								entry.setId(urlSitemap.toString());
+								entry.setUpdated(su.getLastModified());
 
 								// Add Entry to Feed
-								List entries = feed.getEntries();
-								if (entries == null) {
-									entries = new ArrayList();
-								}
-								entries.add(entry);
-								feed.setEntries(entries);
+								log.debug("Adding entry to output feed "+urlSitemap.toString()+" (updated "+DATE_TIME_FORMATTER.format(su.getLastModified())+")...");
+								atomEntries.add(entry);
 							}
-						} // for
+						} // end for
 					}
 				}
 			}
 
-			// Publish your ATOM Feed
-			if (feed != null) {
-				log.debug("Writing AtomFeed File .... ");
-
-				File RSSDoc = new File(output + "/" + "atomfeed.atom");
-				if (!RSSDoc.exists()) {
-					RSSDoc.createNewFile();
-				}
-				WireFeedOutput wfo = new WireFeedOutput();
-				wfo.output(feed, RSSDoc);
-			}
+			// Publish the ATOM Feed
+			entries2Atom(
+					atomEntries,
+					output,
+					atomHeader
+			);
 
 		} catch (Exception e) {
 			throw new Pillar4Exception(e);
@@ -214,79 +271,33 @@ public class Pillar4Helper {
 		long end = System.currentTimeMillis();
 		log.debug("sitemap2Atom executed in " + (end - start) + " ms");
 	}
-
-	/**
-	 * Read a test resource file and return its content as byte array.
-	 * 
-	 * @param resourceName path to the resource file
-	 * @return byte content of the file
-	 * @throws IOException
-	 */
-	protected static byte[] getResourceAsBytes(String resourceName) throws IOException {
-		File file = new File(resourceName);
-		InputStream is = new FileInputStream(file);
-		return IOUtils.toByteArray(is);
-	}
-
-	protected Feed setHeaderAtomFeed(String info) throws ParseException, IOException {
-
-		Feed hfeed = new Feed();
+	
+	private class AtomEntry {
 		
-		try {
-
-			// parse XML file
-			File xmlFile = new File(info);
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(xmlFile);
-
-			doc.getDocumentElement().normalize();
-			NodeList dataAtomList = doc.getElementsByTagName("source");
-			for (int i = 0; i < dataAtomList.getLength(); i++) {
-
-				Node node = dataAtomList.item(i);
-				
-				if (node.getNodeType() == Node.ELEMENT_NODE) {
-					Element Element_atominfo = (Element) node;
-					
-					hfeed.setFeedType(Element_atominfo.getElementsByTagName("typeFeed").item(0).getTextContent());
-					hfeed.setTitle(Element_atominfo.getElementsByTagName("title").item(0).getTextContent());
-					hfeed.setId(Element_atominfo.getElementsByTagName("idfeed").item(0).getTextContent());
-
-					//Link
-					Link linkAtom = new Link();
-					linkAtom.setRel(Element_atominfo.getElementsByTagName("rel").item(0).getTextContent());
-					linkAtom.setType(Element_atominfo.getElementsByTagName("type").item(0).getTextContent());
-					linkAtom.setHref(Element_atominfo.getElementsByTagName("link").item(0).getTextContent());
-					
-					List links = hfeed.getOtherLinks();
-					if (links == null) {
-						links = new ArrayList();
-					}
-					links.add(linkAtom);
-					hfeed.setOtherLinks(links);
-					 
-					//Author
-					Person AuthorsAtom = new Person();
-					AuthorsAtom.setName(Element_atominfo.getElementsByTagName("author").item(0).getTextContent());
-					
-					List authorsAtom = hfeed.getAuthors();
-					if (authorsAtom == null) {
-						authorsAtom = new ArrayList();
-					}
-					authorsAtom.add(AuthorsAtom);
-					hfeed.setAuthors(authorsAtom);
-				
-				}
-
-			}
-			String dateNow = sdf.format(new Date());
-			Date udate = (Date) sdf.parseObject(dateNow);
-			hfeed.setUpdated(udate);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return hfeed;
 	}
+	
+	private Date getDateThreshold() {
+		Calendar c = Calendar.getInstance();
+		c.add(c.DATE, -numberOfDaysInRange);
+		return c.getTime();
+	}
+
+	protected Feed parseAtomHeader(File header) throws Pillar4Exception {		
+		try {
+			// parse Atom header information provided in the header
+			SyndFeedInput inputParser = new SyndFeedInput();
+			return (Feed)inputParser.build(header).createWireFeed();
+		} catch (Exception e) {
+			throw new Pillar4Exception(e);
+		}
+	}
+
+	public int getNumberOfDaysInRange() {
+		return numberOfDaysInRange;
+	}
+
+	public void setNumberOfDaysInRange(int numberOfDaysInRange) {
+		this.numberOfDaysInRange = numberOfDaysInRange;
+	}	
+	
 }
