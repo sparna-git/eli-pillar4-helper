@@ -10,8 +10,12 @@
 
     <fileSets>
         <fileSet>
+            <directory>${project.basedir}/../pillar4-helper-app/documentation</directory>
+            <outputDirectory>/documentation</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>${project.basedir}/../../..</directory>
-            <outputDirectory>/sources/eu.europa.publications</outputDirectory>
+            <outputDirectory>/sources/eu.europa.op</outputDirectory>
             <excludes>
                <exclude>**/target/</exclude>
             </excludes>
