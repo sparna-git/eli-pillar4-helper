@@ -15,12 +15,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.query.AbstractTupleQueryResultHandler;
-import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResultHandlerException;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -83,7 +79,7 @@ public class Pillar4Helper {
 			r.init();
 			
 			try(RepositoryConnection c = r.getConnection()) {
-				TupleQuery q = c.prepareTupleQuery(Files.readString(query.toPath()));
+				TupleQuery q = c.prepareTupleQuery(FileUtils.readFileToString(query, "UTF-8"));
 				Pillar4SparqlQueryResultHandler handler = new Pillar4SparqlQueryResultHandler();
 				q.evaluate(handler);
 				entries = handler.getEntries();

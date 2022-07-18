@@ -4,6 +4,9 @@ import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.rometools.rome.feed.atom.Feed;
 import com.rometools.rome.feed.atom.Link;
 import com.rometools.rome.feed.atom.Person;
@@ -11,6 +14,8 @@ import com.rometools.rome.io.WireFeedOutput;
 
 public class AtomHeaderGenerator {
 
+	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
+	
 	public static String DEFAULT_TITLE = "**Put title here**";
 	public static String DEFAULT_ID = "**Put Atom ID here**";
 	public static String DEFAULT_LINK = "http://**Put link here**";
@@ -55,6 +60,7 @@ public class AtomHeaderGenerator {
 		feed.setAuthors(Collections.singletonList(authors));
 		
 		// write 
+		log.debug("Writing ATOM header "+output.getAbsolutePath());
 		try {
 			if (!output.exists()) {
 				output.createNewFile();
