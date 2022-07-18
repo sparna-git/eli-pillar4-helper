@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>eu.europa.publications.eli</groupId>
 		<artifactId>pillar4-helper</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -35,6 +35,7 @@
 		                        <descriptor>src/main/assembly/assembly.xml</descriptor>
 		                    </descriptors>
 		                    <attach>true</attach>
+    						<finalName>pillar4-helper-${project.version}</finalName>
 		                </configuration>
                     </execution>
                 </executions>
