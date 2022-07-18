@@ -10,6 +10,8 @@ import eu.europa.op.eli.pillar4.helper.csv2pillar4.ArgumentsCsv2Pillar4;
 import eu.europa.op.eli.pillar4.helper.csv2pillar4.Csv2Pillar4;
 import eu.europa.op.eli.pillar4.helper.sitemap2atom.ArgumentsSitemap2Atom;
 import eu.europa.op.eli.pillar4.helper.sitemap2atom.Sitemap2Atom;
+import eu.europa.op.eli.pillar4.helper.sparql2pillar4.ArgumentsSparql2Pillar4;
+import eu.europa.op.eli.pillar4.helper.sparql2pillar4.Sparql2Pillar4;
 
 
 public class Main {
@@ -18,6 +20,7 @@ public class Main {
 
 		SITEMAP2ATOM(new ArgumentsSitemap2Atom(), new Sitemap2Atom()),
 		CSV2PILLAR4(new ArgumentsCsv2Pillar4(), new Csv2Pillar4()),
+		SPARQL2PILLAR4(new ArgumentsSparql2Pillar4(), new Sparql2Pillar4()),
 		ATOMHEADER(new ArgumentsAtomHeader(), new AtomHeader())
 		;
 

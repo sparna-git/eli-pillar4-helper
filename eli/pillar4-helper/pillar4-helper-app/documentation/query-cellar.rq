@@ -1,0 +1,6 @@
+# To be executed against endpoint http://publications.europa.eu/webapi/rdf/sparql
+prefix cdm: <http://publications.europa.eu/ontology/cdm#> 
+select (IRI(STR(?eliString)) AS ?eli) ?updateDate where {
+  ?x cdm:resource_legal_eli ?eliString .
+  ?x <http://publications.europa.eu/ontology/cdm/cmr#lastModificationDate> ?updateDate .
+} 

@@ -2,7 +2,7 @@ package eu.europa.op.eli.pillar4.helper;
 
 import com.opencsv.bean.CsvBindByPosition;
 
-public class SitemapCsv {
+public class Pillar4Entry {
 	
 	@CsvBindByPosition(position = 0)
 	protected String url;

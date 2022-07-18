@@ -16,6 +16,15 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.AbstractTupleQueryResultHandler;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResultHandlerException;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +55,54 @@ public class Pillar4Helper {
 	// in which entries of the sitemap will be inserted in the Atom
 	private int numberOfDaysInRange = 60;
 
-	public void csv2Pillar4(
-			File input,
+	
+	public List<Pillar4Entry> parseCsv(File input) throws Pillar4Exception {
+		try {
+			log.debug("Reading input CSV file...");
+			CsvToBean<Pillar4Entry> parser = new CsvToBeanBuilder<Pillar4Entry>(new FileReader(input))
+					.withType(Pillar4Entry.class)
+					.withSkipLines(1)
+					.build();
+			List<Pillar4Entry> entries = parser.parse();
+			
+			// sort the list
+			entries.sort((row1, row2) -> row2.getUpdateDate().compareTo(row1.getUpdateDate()));
+			
+			log.debug("Done reading CSV");
+			return entries;
+		} catch (Exception e) {
+			throw new Pillar4Exception(e);
+		}
+	}
+	
+	public List<Pillar4Entry> executeSparql(File query, String endpointUrl) throws Pillar4Exception {
+		try {
+			log.debug("executing SPARQL...");
+			List<Pillar4Entry> entries;
+			SPARQLRepository r = new SPARQLRepository(endpointUrl);
+			r.init();
+			
+			try(RepositoryConnection c = r.getConnection()) {
+				TupleQuery q = c.prepareTupleQuery(Files.readString(query.toPath()));
+				Pillar4SparqlQueryResultHandler handler = new Pillar4SparqlQueryResultHandler();
+				q.evaluate(handler);
+				entries = handler.getEntries();
+			} catch (TupleQueryResultHandlerException e) {
+				throw new Pillar4Exception(e);
+			}
+			
+			// sort the list
+			entries.sort((row1, row2) -> row2.getUpdateDate().compareTo(row1.getUpdateDate()));
+			
+			log.debug("Done executing SPARQL");
+			return entries;
+		} catch (Exception e) {
+			throw new Pillar4Exception(e);
+		}
+	}
+	
+	public void entries2Pillar4(
+			List<Pillar4Entry> entries,
 			File outputSitemapDir,
 			File outputAtomFile,
 			URL baseUrl,
@@ -55,23 +110,10 @@ public class Pillar4Helper {
 			File atomHeader
 	) throws Pillar4Exception {
 
-		log.debug("Executing csv2Pillar4...");
+		log.debug("Generating Pillar4...");
 		long start = System.currentTimeMillis();
 
 		try {
-			// Read CSV file
-			log.debug("Reading input CSV file...");
-			CsvToBean<SitemapCsv> parser = new CsvToBeanBuilder<SitemapCsv>(new FileReader(input))
-					.withType(SitemapCsv.class)
-					.withSkipLines(1)
-					.build();
-			List<SitemapCsv> stmapdata = parser.parse();
-
-			// sort the list
-			stmapdata.sort((row1, row2) -> row2.getUpdateDate().compareTo(row1.getUpdateDate()));
-
-			// Format Date
-
 			// Create folder is not exist
 			Path path = Paths.get(outputSitemapDir.toString());
 			if (!Files.exists(path)) {
@@ -84,10 +126,10 @@ public class Pillar4Helper {
 			
 			// Generator Sitemap
 			WebSitemapGenerator wsg = new WebSitemapGenerator(baseUrl, outputSitemapDir);
-			for (int i = 0; i < stmapdata.size(); i++) {
-				SitemapCsv csvLine = stmapdata.get(i);
+			for (int i = 0; i < entries.size(); i++) {
+				Pillar4Entry csvLine = entries.get(i);
 				if ((i % 1000) == 0) {
-					log.debug("Processing CSV line " + i + "...");
+					log.debug("Processing entry " + i + "...");
 				}
 
 				// Date Format
@@ -127,9 +169,10 @@ public class Pillar4Helper {
 			}
 
 			log.debug("Writing output sitemap...");
+			log.debug("Writing to "+outputSitemapDir.getAbsolutePath());
 			// Write the sitemap File
 			String mainoutputSitemapPath = null;
-			if (stmapdata.size() > 50000) {
+			if (entries.size() > 50000) {
 				wsg.write();
 				wsg.writeSitemapsWithIndex();
 				mainoutputSitemapPath = outputSitemapDir.getAbsolutePath() + "/" + "sitemap_index.xml";
@@ -153,8 +196,10 @@ public class Pillar4Helper {
 		}
 
 		long end = System.currentTimeMillis();
-		log.debug("csv2Pillar4 executed in " + (end - start) + " ms");
+		log.debug("Pillar4 generated in " + (end - start) + " ms");
 	}
+	
+
 	
 	public void entries2Atom(
 			List<Entry> entries,
@@ -181,6 +226,7 @@ public class Pillar4Helper {
 
 			// Publish the ATOM Feed
 			log.debug("Writing AtomFeed File...");
+			log.debug("Writing to "+output.getAbsolutePath());
 			if (!output.exists()) {
 				output.createNewFile();
 			}
@@ -270,10 +316,6 @@ public class Pillar4Helper {
 
 		long end = System.currentTimeMillis();
 		log.debug("sitemap2Atom executed in " + (end - start) + " ms");
-	}
-	
-	private class AtomEntry {
-		
 	}
 	
 	private Date getDateThreshold() {

@@ -1,0 +1,9 @@
+# To be executed against https://data.legilux.public.lu/sparqlendpoint
+PREFIX jolux: <http://data.legilux.public.lu/resource/ontology/jolux#>
+SELECT ?eli (STR(?publicationDate) AS ?updateDate) (STR(?titleLang) AS ?title)
+WHERE {
+ ?eli a jolux:Act .
+ ?eli jolux:publicationDate ?publicationDate .
+ OPTIONAL { ?eli jolux:isRealizedBy/jolux:title ?titleLang . }
+}
+ORDER BY DESC(?publicationDate)

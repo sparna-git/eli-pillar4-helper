@@ -6,6 +6,8 @@ import java.net.URL;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
+import eu.europa.op.eli.pillar4.helper.cli.FileExistsValidator;
+
 @Parameters(
 		commandDescription = "Generates a Pillar 4 atom feed from a Pillar 4 sitemap file."
 )
@@ -14,7 +16,8 @@ public class ArgumentsSitemap2Atom {
 	@Parameter(
 			names = { "-i", "--sitemapInput" },
 			description = "Path to the input Sitemap file, from which the most recent entries will be read to be inserted in the Atom feed.",
-			required = true
+			required = true,
+			validateWith = FileExistsValidator.class
 	)
 	private File sitemapInput;
 	

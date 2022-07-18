@@ -63,10 +63,15 @@
         </dependency>
         
         <dependency>
-			<groupId>com.opencsv</groupId>
-		    <artifactId>opencsv</artifactId>
-		  	<version>5.3</version>  	
-		</dependency>
+					<groupId>com.opencsv</groupId>
+		    	<artifactId>opencsv</artifactId>
+				</dependency>
+
+				<dependency>
+				  <groupId>org.eclipse.rdf4j</groupId>
+				  <artifactId>rdf4j-storage</artifactId>
+				  <type>pom</type>
+				</dependency>
                 
         
 	</dependencies>
