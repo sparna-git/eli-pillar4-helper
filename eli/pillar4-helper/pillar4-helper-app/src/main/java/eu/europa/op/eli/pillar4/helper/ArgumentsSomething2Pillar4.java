@@ -91,5 +91,13 @@ public class ArgumentsSomething2Pillar4 {
 	public void setOutputAtom(File outputAtom) {
 		this.outputAtom = outputAtom;
 	}
+
+	public void setAtomDays(int atomDays) {
+		this.atomDays = atomDays;
+	}
+
+	public int getAtomDays() {
+		return atomDays;
+	}
 	
 }

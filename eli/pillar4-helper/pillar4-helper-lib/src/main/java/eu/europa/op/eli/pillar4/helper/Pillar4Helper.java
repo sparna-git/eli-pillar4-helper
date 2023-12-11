@@ -119,6 +119,8 @@ public class Pillar4Helper {
 			
 			List<Entry> atomEntries = new ArrayList<Entry>();
 			Date dateThreshold = this.getDateThreshold();
+			log.debug("Number of days in range for Atom feed generation "+this.numberOfDaysInRange);
+			log.debug("Date threshold for Atom is "+dateThreshold);
 			
 			// Generator Sitemap
 			WebSitemapGenerator wsg = new WebSitemapGenerator(baseUrl, outputSitemapDir);
@@ -146,6 +148,7 @@ public class Pillar4Helper {
 				wsg.addUrl(url);
 				
 				// then build Atom feed if date is in range
+				log.debug(updateDate.toString());
 				if (updateDate.after(dateThreshold)) {
 					// Create an Entry
 					Entry entry = new Entry();
@@ -192,7 +195,7 @@ public class Pillar4Helper {
 		}
 
 		long end = System.currentTimeMillis();
-		log.debug("Pillar4 generated in " + (end - start) + " ms");
+		log.debug("Pillar4 generated with "+entries.size()+" entries in sitemap in " + (end - start) + " ms");
 	}
 	
 

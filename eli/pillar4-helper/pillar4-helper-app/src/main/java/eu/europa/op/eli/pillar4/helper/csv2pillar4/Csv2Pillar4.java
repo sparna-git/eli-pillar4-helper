@@ -19,6 +19,7 @@ public class Csv2Pillar4 implements CliCommandIfc {
 		log.debug(a.toString());
 		
 		Pillar4Helper pillar4Helper = new Pillar4Helper();
+		pillar4Helper.setNumberOfDaysInRange(a.getAtomDays());
 		pillar4Helper.entries2Pillar4(
 				pillar4Helper.parseCsv(a.getInput()),
 				a.getOutputSitemap(),
