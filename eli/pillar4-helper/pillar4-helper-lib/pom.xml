@@ -71,6 +71,13 @@
 				  <groupId>org.eclipse.rdf4j</groupId>
 				  <artifactId>rdf4j-storage</artifactId>
 				  <type>pom</type>
+				  <!-- exclude sail-solr to avoid zookeeper dependency that brings unsecure deps -->
+          <exclusions>
+              <exclusion>
+                <groupId>org.eclipse.rdf4j</groupId>
+                <artifactId>rdf4j-sail-solr</artifactId>
+              </exclusion>
+          </exclusions> 
 				</dependency>
                 
         

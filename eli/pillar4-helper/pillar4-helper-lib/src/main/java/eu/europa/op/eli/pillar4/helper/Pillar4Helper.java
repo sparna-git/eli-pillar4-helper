@@ -279,7 +279,7 @@ public class Pillar4Helper {
 
 					if (!sm.isIndex()) {
 
-						log.debug("Parsing sitemap file "+sFile.getAbsolutePath()+"...");
+						log.debug("Parsing a sitemap file ...");
 						for (SiteMapURL su : ((SiteMap)sm).getSiteMapUrls()) {
 							URL urlSitemap = su.getUrl();
 							// log.debug("Testing entry for feed inclusion : "+urlSitemap.toString()+"/"+su.getLastModified()+"...");

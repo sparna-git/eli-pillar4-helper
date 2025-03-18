@@ -23,10 +23,11 @@ import org.xml.sax.SAXException;
 
 public class SitemapUpdate {
 	
-	public void ModifiedXMLSitemap(String inputXML,URL baseUrlset) throws FileNotFoundException, TransformerException {
+	public void ModifiedXMLSitemap(String inputXML,URL baseUrlset) throws FileNotFoundException, TransformerException, ParserConfigurationException {
 		
 		File fileXMLGenerated = new File(inputXML);
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 		
 		try(InputStream fileXML = new FileInputStream(fileXMLGenerated)){
 			
@@ -52,7 +53,9 @@ public class SitemapUpdate {
 	        transformer.transform(source, result);
 			
 		} catch (ParserConfigurationException | SAXException | IOException e) {
-			e.printStackTrace();
+			System.out.println("Error in parsing the sitemap file : "+e.getMessage());
+			// avoid full stacktrace printing for security reasons
+			// e.printStackTrace();
 		}
 	}	
 	
