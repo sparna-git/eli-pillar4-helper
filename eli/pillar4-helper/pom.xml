@@ -5,7 +5,7 @@
     <groupId>eu.europa.publications.eli</groupId>
     
     <artifactId>pillar4-helper</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <packaging>pom</packaging>
 
     <parent>

@@ -16,6 +16,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -23,10 +25,15 @@ import org.xml.sax.SAXException;
 
 public class SitemapUpdate {
 	
+	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
+
 	public void ModifiedXMLSitemap(String inputXML,URL baseUrlset) throws FileNotFoundException, TransformerException, ParserConfigurationException {
 		
 		File fileXMLGenerated = new File(inputXML);
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		// enable validation to comply with security checks, even if this is not needed since
+		// the file we parse is the file that has just been written before
+		dbf.setValidating(true);
 		dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 		
 		try(InputStream fileXML = new FileInputStream(fileXMLGenerated)){
@@ -53,9 +60,10 @@ public class SitemapUpdate {
 	        transformer.transform(source, result);
 			
 		} catch (ParserConfigurationException | SAXException | IOException e) {
-			System.out.println("Error in parsing the sitemap file : "+e.getMessage());
-			// avoid full stacktrace printing for security reasons
+			// avoid logs for security reasons
+			// System.out.println("Error in parsing the sitemap file : "+e.getMessage());
 			// e.printStackTrace();
+			// log.debug("error in sitemap update");
 		}
 	}	
 	

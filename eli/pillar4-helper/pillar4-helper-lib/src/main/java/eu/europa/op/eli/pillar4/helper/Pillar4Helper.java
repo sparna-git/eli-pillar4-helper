@@ -273,32 +273,33 @@ public class Pillar4Helper {
 			for (File sFile : xmlFiles) {
 				if (sFile.isFile()) {
 
-					InputStream is = new FileInputStream(sFile);
-					AbstractSiteMap sm = parser.parseSiteMap("text/xml", IOUtils.toByteArray(is), baseUrl);
-					is.close();
+					try(InputStream is = new FileInputStream(sFile)) {
+						AbstractSiteMap sm = parser.parseSiteMap("text/xml", IOUtils.toByteArray(is), baseUrl);
 
-					if (!sm.isIndex()) {
+						if (!sm.isIndex()) {
+							log.debug("Parsing a sitemap file ...");
+							for (SiteMapURL su : ((SiteMap)sm).getSiteMapUrls()) {
+								URL urlSitemap = su.getUrl();
+								// log.debug("Testing entry for feed inclusion : "+urlSitemap.toString()+"/"+su.getLastModified()+"...");
+								
+								// Filter for the write data sitemap in Atom
+								if (su.getLastModified().after(dateThreshold)) {
+									// Create an Entry
+									Entry entry = new Entry();
 
-						log.debug("Parsing a sitemap file ...");
-						for (SiteMapURL su : ((SiteMap)sm).getSiteMapUrls()) {
-							URL urlSitemap = su.getUrl();
-							// log.debug("Testing entry for feed inclusion : "+urlSitemap.toString()+"/"+su.getLastModified()+"...");
-							
-							// Filter for the write data sitemap in Atom
-							if (su.getLastModified().after(dateThreshold)) {
-								// Create an Entry
-								Entry entry = new Entry();
+									entry.setTitle(urlSitemap.toString());
+									entry.setId(urlSitemap.toString());
+									entry.setUpdated(su.getLastModified());
 
-								entry.setTitle(urlSitemap.toString());
-								entry.setId(urlSitemap.toString());
-								entry.setUpdated(su.getLastModified());
-
-								// Add Entry to Feed
-								log.debug("Adding entry to output feed "+urlSitemap.toString()+" (updated "+DATE_TIME_FORMATTER.format(su.getLastModified())+")...");
-								atomEntries.add(entry);
-							}
-						} // end for
+									// Add Entry to Feed
+									log.debug("Adding entry to output feed "+urlSitemap.toString()+" (updated "+DATE_TIME_FORMATTER.format(su.getLastModified())+")...");
+									atomEntries.add(entry);
+								}
+							} // end for
+						}
 					}
+
+
 				}
 			}
 
