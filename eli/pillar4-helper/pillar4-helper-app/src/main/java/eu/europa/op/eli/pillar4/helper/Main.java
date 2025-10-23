@@ -41,12 +41,12 @@ public class Main {
 		}		
 	}
 	
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		Main main = new Main();
 		main.run(args);
 	}
 
-	public void run(String[] args) throws Exception {
+	public void run(String[] args) {
 		ArgumentsMain main = new ArgumentsMain();
 		JCommander jc = new JCommander(main);
 		for (COMMAND aCOMMAND : COMMAND.values()) {

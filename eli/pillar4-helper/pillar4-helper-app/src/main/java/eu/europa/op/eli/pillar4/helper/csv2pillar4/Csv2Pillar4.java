@@ -11,7 +11,7 @@ public class Csv2Pillar4 implements CliCommandIfc {
 	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 	
 	@Override
-	public void execute(Object args) throws Exception {
+	public void execute(Object args){
 		
 		ArgumentsCsv2Pillar4 a = (ArgumentsCsv2Pillar4)args;
 		

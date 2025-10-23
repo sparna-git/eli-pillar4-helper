@@ -54,7 +54,9 @@ public class SitemapUpdate {
 			
 			// write the content into xml file
 	        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-	        Transformer transformer = transformerFactory.newTransformer();
+			// completely disable DTDs for security reasons
+			transformerFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+	        Transformer transformer = transformerFactory.newTransformer();			
 	        DOMSource source = new DOMSource(doc);
 	        StreamResult result = new StreamResult(inputXML);
 	        transformer.transform(source, result);

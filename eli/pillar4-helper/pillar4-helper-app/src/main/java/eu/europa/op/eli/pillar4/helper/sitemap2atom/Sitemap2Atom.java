@@ -11,7 +11,7 @@ public class Sitemap2Atom implements CliCommandIfc {
 	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 	
 	@Override
-	public void execute(Object args) throws Exception {
+	public void execute(Object args) {
 		ArgumentsSitemap2Atom a = (ArgumentsSitemap2Atom)args;
 		
 		log.debug("Command run with following arguments : ");

@@ -52,7 +52,7 @@ public class Pillar4Helper {
 	private int numberOfDaysInRange = 60;
 
 	
-	public List<Pillar4Entry> parseCsv(File input) throws Pillar4Exception {
+	public List<Pillar4Entry> parseCsv(File input) {
 		try {
 			log.debug("Reading input CSV file...");
 			CsvToBean<Pillar4Entry> parser = new CsvToBeanBuilder<Pillar4Entry>(new FileReader(input))
@@ -71,7 +71,7 @@ public class Pillar4Helper {
 		}
 	}
 	
-	public List<Pillar4Entry> executeSparql(File query, String endpointUrl) throws Pillar4Exception {
+	public List<Pillar4Entry> executeSparql(File query, String endpointUrl) {
 		try {
 			log.debug("executing SPARQL...");
 			List<Pillar4Entry> entries;
@@ -104,7 +104,7 @@ public class Pillar4Helper {
 			URL baseUrl,
 			URL baseurlset,
 			File atomHeader
-	) throws Pillar4Exception {
+	) {
 
 		log.debug("Generating Pillar4...");
 		long start = System.currentTimeMillis();
@@ -204,7 +204,7 @@ public class Pillar4Helper {
 			List<Entry> entries,
 			File output,
 			File atomHeader
-	) throws Pillar4Exception {
+	) {
 		log.debug("Writing final Atom feed...");
 		long start = System.currentTimeMillis();
 		try {
@@ -247,7 +247,7 @@ public class Pillar4Helper {
 			File output,
 			URL baseUrl,
 			File atomHeader
-	) throws Pillar4Exception {
+	) {
 
 		log.debug("Executing sitemap2Atom...");
 		long start = System.currentTimeMillis();
@@ -324,7 +324,7 @@ public class Pillar4Helper {
 		return c.getTime();
 	}
 
-	protected Feed parseAtomHeader(File header) throws Pillar4Exception {		
+	protected Feed parseAtomHeader(File header) {		
 		try {
 			// parse Atom header information provided in the header
 			SyndFeedInput inputParser = new SyndFeedInput();

@@ -11,7 +11,7 @@ public class Sparql2Pillar4 implements CliCommandIfc {
 	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 	
 	@Override
-	public void execute(Object args) throws Exception {
+	public void execute(Object args) {
 		
 		ArgumentsSparql2Pillar4 a = (ArgumentsSparql2Pillar4)args;
 		

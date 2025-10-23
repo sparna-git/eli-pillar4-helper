@@ -11,7 +11,7 @@ public class AtomHeader implements CliCommandIfc {
 	private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 	
 	@Override
-	public void execute(Object args) throws Exception {
+	public void execute(Object args) {
 		ArgumentsAtomHeader a = (ArgumentsAtomHeader)args;
 		
 		log.debug("Command run with following arguments : ");

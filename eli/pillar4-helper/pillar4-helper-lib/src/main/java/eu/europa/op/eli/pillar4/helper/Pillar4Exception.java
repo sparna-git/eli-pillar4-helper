@@ -1,6 +1,6 @@
 package eu.europa.op.eli.pillar4.helper;
 
-public class Pillar4Exception extends Exception {
+public class Pillar4Exception extends RuntimeException {
 
 	public Pillar4Exception() {
 		super();
